@@ -1,167 +1,115 @@
 ---
-name: dzil build and test
-
-on:
-  push:
-    branches:
-      - "*"
-  pull_request:
-    branches:
-      - "*"
-  workflow_dispatch:
-
-jobs:
-  build-job:
-    name: Build distribution
-    runs-on: ubuntu-20.04
-    container:
-      image: perldocker/perl-tester:5.34
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run Tests
-        env:
-          AUTHOR_TESTING: 1
-          AUTOMATED_TESTING: 1
-          EXTENDED_TESTING: 1
-          RELEASE_TESTING: 1
-        run: auto-build-and-test-dist
-      - uses: actions/upload-artifact@v3
-        with:
-          name: build_dir
-          path: build_dir
-        if: ${{ github.actor != 'nektos/act' }}
-  # coverage-job:
-  #   needs: build-job
-  #   runs-on: ubuntu-20.04
-  #   container:
-  #     image: perldocker/perl-tester:5.34
-  #   steps:
-  #     - uses: actions/checkout@v3 # codecov wants to be inside a Git repository
-  #     - uses: actions/download-artifact@v3
-  #       with:
-  #         name: build_dir
-  #         path: .
-  #     - name: Install deps and test
-  #       run: cpan-install-dist-deps && test-dist
-  #       env:
-  #         CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
-  # ubuntu-test-job:
-  #   needs: build-job
-  #   runs-on: "ubuntu-latest"
-  #   strategy:
-  #     fail-fast: true
-  #     matrix:
-  #       os: [ubuntu-20.04]
-  #       perl-version:
-  #         - "5.14"
-  #         - "5.16"
-  #         - "5.18"
-  #         - "5.20"
-  #         - "5.22"
-  #         - "5.24"
-  #         - "5.26"
-  #         - "5.28"
-  #         - "5.30"
-  #         - "5.32"
-  #         - "5.34"
-  #         - "5.36"
-  #         - "5.38"
-  #   steps:
-  #     - name: set up perl
-  #       uses: shogo82148/actions-setup-perl@v1
-  #       with:
-  #         perl-version: ${{ matrix.perl-version }}
-  #     - uses: actions/download-artifact@v3
-  #       with:
-  #         name: build_dir
-  #         path: .
-  #     - name: install deps using cpm
-  #       uses: perl-actions/install-with-cpm@v1
-  #       with:
-  #         cpanfile: "cpanfile"
-  #         args: "--with-suggests --with-recommends --with-test"
-  #     - run: prove -lr t
-  #       env:
-  #         AUTHOR_TESTING: 1
-  #         RELEASE_TESTING: 1
-  # macos-test-job:
-  #   needs: ubuntu-test-job
-  #   runs-on: "macos-latest"
-  #   strategy:
-  #     # fail-fast: true
-  #     matrix:
-  #       os: [macos-latest]
-  #       perl-version:
-  #         - "5.14"
-  #         - "5.16"
-  #         - "5.18"
-  #         - "5.20"
-  #         - "5.22"
-  #         - "5.24"
-  #         - "5.26"
-  #         - "5.28"
-  #         - "5.30"
-  #         - "5.32"
-  #         - "5.34"
-  #         - "5.36"
-  #         - "5.38"
-  #   name: perl ${{ matrix.perl-version }} on ${{ matrix.os }}
-  #   steps:
-  #     - name: set up perl
-  #       uses: shogo82148/actions-setup-perl@v1
-  #       with:
-  #         perl-version: ${{ matrix.perl-version }}
-  #     - uses: actions/download-artifact@v3
-  #       with:
-  #         name: build_dir
-  #         path: .
-  #     - name: install deps using cpm
-  #       uses: perl-actions/install-with-cpm@v1
-  #       with:
-  #         cpanfile: "cpanfile"
-  #         args: "--with-suggests --with-recommends --with-test"
-  #     - run: prove -lr t
-  #       env:
-  #         AUTHOR_TESTING: 1
-  #         RELEASE_TESTING: 1
-  # windows-test-job:
-  #   needs: ubuntu-test-job
-  #   runs-on: "windows-latest"
-  #   strategy:
-  #     # fail-fast: true
-  #     matrix:
-  #       os: [windows-latest]
-  #       perl-version:
-  #         - "5.14"
-  #         - "5.16"
-  #         - "5.18"
-  #         - "5.20"
-  #         - "5.22"
-  #         - "5.24"
-  #         - "5.26"
-  #         - "5.28"
-  #         - "5.30"
-  #         - "5.32"
-  #         - "5.34"
-  #         - "5.36"
-  #         - "5.38"
-  #   name: perl ${{ matrix.perl-version }} on ${{ matrix.os }}
-  #   steps:
-  #     - name: set up perl
-  #       uses: shogo82148/actions-setup-perl@v1
-  #       with:
-  #         perl-version: ${{ matrix.perl-version }}
-  #         distribution: strawberry # this option only used on windows
-  #     - uses: actions/download-artifact@v3
-  #       with:
-  #         name: build_dir
-  #         path: .
-  #     - name: install deps using cpm
-  #       uses: perl-actions/install-with-cpm@v1
-  #       with:
-  #         cpanfile: "cpanfile"
-  #         args: "--with-suggests --with-recommends --with-test"
-  #     - run: prove -lr t
-  #       env:
-  #         AUTHOR_TESTING: 0
-  #         RELEASE_TESTING: 0
+  name: CI
+  
+  on:
+    push:
+      branches:
+        - "*"
+      # pull_request:
+      #   branches:
+      #     - "*"
+      # # schedule:
+      #   cron: "15 6 * * 0"  # Once weekly, on Sundays
+  
+  jobs:
+    build:
+      name: "Build a distribution tarball"
+      runs-on: ubuntu-latest
+  
+      container:
+        image: perldocker/perl-tester:latest
+  
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+  
+        - name: Perl version
+          run: perl -V
+  
+        - name: Install CPM + Dist::Zilla Author Bundle
+          uses: perl-actions/install-with-cpm@stable
+          with:
+            sudo: false
+            install: Dist::Zilla::PluginBundle::Author::GTERMARS
+  
+        - name: Install dependencies
+          run: cpm install -g --no-test --show-build-log-on-failure $(dzil listdeps --author --missing)
+  
+        - name: Test
+          run: dzil test --all
+  
+        - name: Build tarball
+          run: dzil build
+  
+        - name: Upload tarball artifact
+          uses: actions/upload-artifact@v2
+          with:
+            name: tarball
+            path: "*.gz"
+  
+        - name: Archive CPM logs
+          if: ${{ failure() }}
+          uses: actions/upload-artifact@v2
+          with:
+            name: build.log
+            path: ~/.perl-cpm/build.log*
+  
+    test:
+      name: "Perl v${{ matrix.perl-version }}"
+      needs: build
+      runs-on: ubuntu-latest
+  
+      strategy:
+        matrix:
+          perl-version:
+            - "latest"
+            - "5.36"
+            - "5.34"
+            - "5.32"
+            - "5.30"
+            - "5.28"
+            - "5.26"
+            - "5.24"
+            - "5.22"
+            - "5.20"
+            - "5.18"
+            - "5.16"
+            - "5.14"
+            - "5.12"
+  
+      container:
+        image: perl:${{ matrix.perl-version }}
+  
+      steps:
+        - name: Download tarball artifact
+          uses: actions/download-artifact@v2
+          with:
+            name: tarball
+  
+        - name: Unpack tarball
+          run: tar -xz --strip-components 1 -f *.gz
+  
+        - name: Perl version
+          run: perl -V
+  
+        - name: Install dependencies
+          uses: perl-actions/install-with-cpanm@v1
+          with:
+            sudo: false
+            args: "--installdeps ."
+  
+        - name: Build
+          run: |
+            perl Makefile.PL
+            make
+  
+        - name: Test
+          run: make test
+  
+        - name: Archive CPANM logs
+          if: ${{ failure() }}
+          uses: actions/upload-artifact@v2
+          with:
+            name: build.log
+            path: ~/.cpanm/work/*/build.log
+  
