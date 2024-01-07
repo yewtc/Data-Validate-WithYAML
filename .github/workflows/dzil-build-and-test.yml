@@ -26,12 +26,17 @@
         - name: Perl version
           run: perl -V
   
-        - name: Install CPM + Dist::Zilla Author Bundle
+        - name: Install CPM +  Dist::Zilla::Plugin::VersionFromModule
           uses: perl-actions/install-with-cpm@stable
           with:
             sudo: false
             install: Dist::Zilla::Plugin::VersionFromModule
-            install: Dist::Zilla::Plugin::ReadmeAddDevInfo
+  
+        - name: Install Dist::Zilla::Plugin::ReadmeAddDevInfo
+          uses: perl-actions/install-with-cpm@stable
+          with:
+            sudo: false
+            install: Dist::Zilla::Plugin::VersionFromModule
   
         - name: Install dependencies
           run: cpm install -g --no-test --show-build-log-on-failure $(dzil listdeps --author --missing)
