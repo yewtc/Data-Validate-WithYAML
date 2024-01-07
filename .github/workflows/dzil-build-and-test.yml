@@ -31,6 +31,7 @@
           with:
             sudo: false
             install: Dist::Zilla::Plugin::VersionFromModule
+            install: Dist::Zilla::Plugin::ReadmeAddDevInfo
   
         - name: Install dependencies
           run: cpm install -g --no-test --show-build-log-on-failure $(dzil listdeps --author --missing)
