@@ -30,7 +30,7 @@
           uses: perl-actions/install-with-cpm@stable
           with:
             sudo: false
-            install: Dist::Zilla::PluginBundle::Author::GTERMARS
+            install: Dist::Zilla::Plugin::VersionFromModule
   
         - name: Install dependencies
           run: cpm install -g --no-test --show-build-log-on-failure $(dzil listdeps --author --missing)
